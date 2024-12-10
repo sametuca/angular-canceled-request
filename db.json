@@ -1,0 +1,11 @@
+{
+    "users": [
+      { "id": 1, "name": "Samet", "age": 25 },
+      { "id": 2, "name": "Canan", "age": 30 }
+    ],
+    "products": [
+      { "id": 1, "name": "Laptop", "price": 5000 },
+      { "id": 2, "name": "Mouse", "price": 150 }
+    ]
+  }
+  
