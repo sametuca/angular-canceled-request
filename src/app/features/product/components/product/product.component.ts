@@ -1,59 +1,44 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { Product } from '../../models/product.interface';
+import { ProductService } from '../../services/product.service';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-product',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
+  selector: 'app-product-list',
   templateUrl: './product.component.html',
-  styleUrls: ['./product.component.css']
+  styleUrls: ['./product.component.css'],
+  imports: [CommonModule],
 })
-export class ProductListComponent implements OnInit {
+export class ProductListComponent implements OnInit, OnDestroy {
   products: Product[] = [];
-  private abortController: AbortController | null = null;
+  private destroy$ = new Subject<void>();
 
-  constructor() {}
+  constructor(private productService: ProductService) {}
 
   ngOnInit(): void {
     this.getAllProducts();
   }
 
-  async getAllProducts() {
-    this.abortController = new AbortController();
-    const signal = this.abortController.signal;
-
-    try {
-      setTimeout(async () => {
-        const response = await fetch('http://localhost:3000/products', { signal });
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        this.products = await response.json();
-      }, 2000);
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.log('Fetch isteği iptal edildi.');
-      } else {
-        console.error('Ürünler alınırken bir hata oluştu:', error);
-      }
-    }
+  getAllProducts(): void {
+    this.productService
+      .getAllProducts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => (this.products = data),
+        error: (error) =>
+          console.error('Ürünler alınırken bir hata oluştu:', error),
+      });
   }
 
-  generateRandomPrice(): number {
-    return Math.floor(Math.random() * 1000) + 1;
+  cancelRequest(): void {
+    this.destroy$.next(); // Mevcut istekleri iptal et
+    this.destroy$.complete(); // Subject'i tamamla
   }
 
-  cancelRequest() {
-    if (this.abortController) {
-      this.abortController.abort(); // Fetch isteğini iptal et
-      this.abortController = null; // Controller'ı sıfırla
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next(); // Tüm istekleri iptal et
+    this.destroy$.complete(); // Subject'i temizle
   }
-}
-
-export interface Product {
-  id: number;
-  name: string;
-  price: number;
 }

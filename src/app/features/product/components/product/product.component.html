@@ -1,8 +1,8 @@
-<ul>
-    <li *ngFor="let product of products">
-        {{ product.name }} - {{ product.price * generateRandomPrice() | currency }}
-    </li>
-</ul>
-
-<button (click)="cancelRequest()">Cancel Loading Product</button>
-<button (click)="getAllProducts()">Load Product</button>
+<div>
+    <button (click)="cancelRequest()">İstekleri İptal Et</button>
+    <ul>
+      <li *ngFor="let product of products">
+        {{ product.name }} - {{ product.price | currency }}
+      </li>
+    </ul>
+  </div>
